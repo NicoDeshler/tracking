@@ -75,7 +75,12 @@ class DiscreteDistribution(dict):
         {}
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        T = self.total()
+        if not T == 0:
+            for key in self.items():
+                self[key] /= T
+        return
+
 
     def sample(self):
         """
@@ -89,7 +94,7 @@ class DiscreteDistribution(dict):
         >>> dist['d'] = 0
         >>> N = 100000.0
         >>> samples = [dist.sample() for _ in range(int(N))]
-        >>> round(samples.count('a') * 1.0/N, 1)  # proportion of 'a'
+        >>> print(samples)>>> round(samples.count('a') * 1.0/N, 1)  # proportion of 'a'
         0.2
         >>> round(samples.count('b') * 1.0/N, 1)
         0.4
@@ -97,9 +102,23 @@ class DiscreteDistribution(dict):
         0.4
         >>> round(samples.count('d') * 1.0/N, 1)
         0.0
+
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # Determines the sample by summing the probabilities of each key until the CDF overshoots the random number.
+        # At this point, we know the r falls in the interval bin of the most recent key.
+
+        r = random.random() * self.total()
+        CDF = 0             # cumulative density function up to index i
+        for key in self.items():
+            CDF += self[key]
+            if r < CDF:
+                # short circuit if condition met
+                sample = key
+                break
+
+        return sample
+
 
 
 class InferenceModule:
@@ -169,7 +188,17 @@ class InferenceModule:
         Return the probability P(noisyDistance | pacmanPosition, ghostPosition).
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        A = noisyDistance == None
+        B = ghostPosition == jailPosition
+        if A and B:
+            return 1
+        elif (A and not B) or (not A and B):
+            return 0
+        else:
+            trueDistance = manhattanDistance(pacmanPosition,ghostPosition)
+            p = busters.getObservationProbability(noisyDistance, trueDistance)
+            return p
+
 
     def setGhostPosition(self, gameState, ghostPosition, index):
         """
