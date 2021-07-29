@@ -107,8 +107,11 @@ class DiscreteDistribution(dict):
         "*** YOUR CODE HERE ***"
         # Determines the sample by summing the probabilities of each key until the CDF overshoots the random number.
         # At this point, we know the r falls in the interval bin of the most recent key.
+        T = round(self.total(),3)
+        if T != 1:
+            raise ValueError('Could not sample from Discrete Distribution because distribution does not sum to 1.')
 
-        r = random.random() * self.total()
+        r = random.random()
         CDF = 0             # cumulative density function up to index i
         for key in self.keys():
             CDF += self[key]
@@ -194,6 +197,7 @@ class InferenceModule:
             return 1
         elif (A and not B) or (not A and B):
             return 0
+
         else:
             trueDistance = manhattanDistance(pacmanPosition,ghostPosition)
             p = busters.getObservationProbability(noisyDistance, trueDistance)
@@ -376,7 +380,20 @@ class ParticleFilter(InferenceModule):
         the DiscreteDistribution may be useful.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        pacmanPosition = gameState.getPacmanPosition()
+        jailPosition = self.getJailPosition()
+
+        belief = self.getBeliefDistribution()
+        for ghostPosition in self.legalPositions:
+            p_obs_state = self.getObservationProb(observation, pacmanPosition, ghostPosition, jailPosition)
+            belief[ghostPosition] *= p_obs_state
+
+        if belief.total() == 0:
+            self.initializeUniformly(gameState)
+            belief = self.getBeliefDistribution()
+
+        belief.normalize()
+        self.particles = [belief.sample() for i in range(self.numParticles)]
 
     def elapseTime(self, gameState):
         """
