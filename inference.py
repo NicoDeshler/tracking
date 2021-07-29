@@ -77,7 +77,7 @@ class DiscreteDistribution(dict):
         "*** YOUR CODE HERE ***"
         T = self.total()
         if not T == 0:
-            for key in self.items():
+            for key in self.keys():
                 self[key] /= T
         return
 
@@ -110,9 +110,9 @@ class DiscreteDistribution(dict):
 
         r = random.random() * self.total()
         CDF = 0             # cumulative density function up to index i
-        for key in self.items():
+        for key in self.keys():
             CDF += self[key]
-            if r < CDF:
+            if r <= CDF:
                 # short circuit if condition met
                 sample = key
                 break
@@ -306,7 +306,14 @@ class ExactInference(InferenceModule):
         position is known.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        pacmanPosition = gameState.getPacmanPosition()
+        jailPosition = self.getJailPosition()
+        belief = self.getBeliefDistribution()
+        print(belief)
+        for ghostPosition in self.allPositions:
+            p_obs_state = self.getObservationProb(observation, pacmanPosition, ghostPosition, jailPosition) # P(observation | state)
+            belief[ghostPosition] *= p_obs_state
+
 
         self.beliefs.normalize()
 
